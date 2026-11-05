@@ -1,5 +1,5 @@
 #include <string>
-#include <cmath>
+#include "config.h"
 //dài vãi
 const std::string symbol[118] = {
     "H", "He",
@@ -25,10 +25,45 @@ int get_atomic(std::string x) {
     return 0;
 }
 int chemotherapy(int z) {
-    int noble_gas[7] = {2, 10, 18, 36, 50, 72, 98};
-    int i = 6;
-    while (z > noble_gas[i] && i >= 0) {
-        i--;
+    if (z <= 0 || z > 118) {
+        return 0;
     }
-    return std::abs(z - noble_gas[i]);
+    const int subshell_n[] = {
+        1, 2, 2, 3, 3, 4, 3, 4, 5, 4, 5, 6,
+        4, 5, 6, 7, 5, 6, 7
+    };
+    const int subshell_capacity[] = {
+        2, 2, 6, 2, 6, 2, 10, 6, 2, 10, 6, 2,
+        14, 10, 6, 2, 14, 10, 6
+    };
+
+    int remaining = z;
+    int outer_shell = 0;
+    int outer_electrons = 0;
+    for (int i = 0; i < 19 && remaining > 0; i++) {
+        int filled = remaining < subshell_capacity[i]
+            ? remaining
+            : subshell_capacity[i];
+        if (subshell_n[i] > outer_shell) {
+            outer_shell = subshell_n[i];
+            outer_electrons = filled;
+        } else if (subshell_n[i] == outer_shell) {
+            outer_electrons += filled;
+        }
+        remaining -= filled;
+    }
+    return outer_electrons;
+}
+bool yield(int outer, int z) {
+    if (outer == 1 || outer == 2 || outer == 3 || outer == 4) {
+        return !(z == 1 || z == 2);
+    }
+    return false;
+}
+bool accept(int outer, int z) {
+    if (z == 1) return true;
+    if (outer == 5 || outer == 6 || outer == 7) {
+        return !(z == 83 || z == 115 || z == 116);
+    }
+    return false;
 }
